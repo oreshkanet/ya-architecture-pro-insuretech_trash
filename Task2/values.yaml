@@ -1,0 +1,23 @@
+externalMetrics:
+  enabled: true
+prometheus:
+  url: http://prometheus-stack-kube-prom-prometheus.monitoring.svc
+rules:
+  default: false
+  custom:
+    - seriesQuery: 'http_requests_total{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^http_requests_total"
+        as: "http_requests_per_second"
+      metricsQuery: 'sum(rate(http_requests_total{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)'
+    - seriesQuery: 'http_requests_total{namespace="insure-tech", service="scaletestapp"}'
+      resources: {}
+      name:
+        matches: "http_requests_total"
+        as: "scaletestapp_requests_per_second"
+      metricsQuery: 'sum(rate(http_requests_total{namespace="insure-tech", service="scaletestapp"}[1m]))'
+ 
